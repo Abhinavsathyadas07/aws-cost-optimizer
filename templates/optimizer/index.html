@@ -1,68 +1,194 @@
-<!-- Add to templates/optimizer/index.html below homepage buttons -->
-
-<!-- Cost Calculator Modal -->
-<div class="modal fade" id="costCalculatorModal" tabindex="-1" aria-labelledby="costCalculatorLabel" aria-hidden="true">
+<!-- Add Template Generator Modal -->
+<div class="modal fade" id="templateGeneratorModal" tabindex="-1" aria-labelledby="templateGeneratorLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="costCalculatorLabel">Cost Calculator</h5>
+        <h5 class="modal-title" id="templateGeneratorLabel">Elastic Beanstalk Template Generator</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <form id="costCalculatorForm">
+      <form id="templateGeneratorForm">
         <div class="modal-body">
           <div class="mb-3">
-            <label for="instanceType" class="form-label">EC2 Instance Type</label>
-            <input type="text" class="form-control" id="instanceType" required>
+            <label for="appName" class="form-label">Application Name</label>
+            <input type="text" class="form-control" id="appName" required>
           </div>
           <div class="mb-3">
-            <label for="instanceCount" class="form-label">Instance Count</label>
-            <input type="number" class="form-control" id="instanceCount" min="1" value="1" required>
+            <label for="envName" class="form-label">Environment Name</label>
+            <input type="text" class="form-control" id="envName" required>
           </div>
-          <div class="mb-3">
-            <label for="hours" class="form-label">Hours Used Per Month</label>
-            <input type="number" class="form-control" id="hours" min="1" value="720" required>
-          </div>
-          <div id="costResult" class="alert d-none mt-2"></div>
+          <div id="templateResult" class="alert d-none mt-2" style="white-space:pre;font-family:monospace"></div>
         </div>
         <div class="modal-footer">
-          <button type="submit" class="btn btn-primary">Calculate</button>
+          <button type="submit" class="btn btn-success">Generate Template</button>
         </div>
       </form>
     </div>
   </div>
 </div>
 
+<!-- Launch modal on button click -->
 <script>
-// Launch modal on button click
-const costBtn = document.querySelector('a.btn-outline-primary');
-costBtn.setAttribute('data-bs-toggle', 'modal');
-costBtn.setAttribute('data-bs-target', '#costCalculatorModal');
+const tmplBtn = document.querySelector('a.btn-outline-success');
+tmplBtn.setAttribute('data-bs-toggle','modal');
+tmplBtn.setAttribute('data-bs-target','#templateGeneratorModal');
 
-// Cost Calculator logic
-const form = document.getElementById('costCalculatorForm');
-form.addEventListener('submit', async function(e){
+// Template Generator logic
+const tmplForm = document.getElementById('templateGeneratorForm');
+tmplForm.addEventListener('submit', async function(e){
   e.preventDefault();
-  const instanceType = document.getElementById('instanceType').value;
-  const count = document.getElementById('instanceCount').value;
-  const hours = document.getElementById('hours').value;
-  const resultDiv = document.getElementById('costResult');
+  const app = document.getElementById('appName').value;
+  const env = document.getElementById('envName').value;
+  const resultDiv = document.getElementById('templateResult');
   resultDiv.classList.add('d-none'); resultDiv.classList.remove('alert-success','alert-danger');
   try {
-    const resp = await fetch('/api/cost-calculator/', {
+    const resp = await fetch('/api/template-generator/', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({instance_type: instanceType, count: count, hours: hours})
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ApplicationName: app, EnvironmentName: env})
     });
     const data = await resp.json();
-    if(data.status === 'success'){
-      resultDiv.textContent = 'Estimated monthly cost: $' + (data.cost || '0');
+    if(data.status==='success'){
+      let jsonOut = JSON.stringify(data.template,null,2);
+      resultDiv.innerText = jsonOut;
       resultDiv.classList.remove('d-none');
       resultDiv.classList.add('alert-success');
     } else {
-      throw new Error(data.error || 'Calculation failed');
+      throw new Error(data.error||'Template generation failed');
     }
   } catch (err) {
-    resultDiv.textContent = err.message;
+    resultDiv.innerText = err.message;
+    resultDiv.classList.remove('d-none');
+    resultDiv.classList.add('alert-danger');
+  }
+});
+</script>
+
+<!-- Add Auto-Scaling Optimizer Modal -->
+<div class="modal fade" id="scalingOptimizerModal" tabindex="-1" aria-labelledby="scalingOptimizerLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="scalingOptimizerLabel">Auto-Scaling Optimizer</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="scalingOptimizerForm">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="minInstances" class="form-label">Min Instances</label>
+            <input type="number" class="form-control" id="minInstances" min="1" value="1" required>
+          </div>
+          <div class="mb-3">
+            <label for="maxInstances" class="form-label">Max Instances</label>
+            <input type="number" class="form-control" id="maxInstances" min="1" value="10" required>
+          </div>
+          <div class="mb-3">
+            <label for="targetCPU" class="form-label">Target CPU Utilization (%)</label>
+            <input type="number" class="form-control" id="targetCPU" min="1" max="100" value="70" required>
+          </div>
+          <div id="scalingResult" class="alert d-none mt-2"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-warning">Optimize</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+const scalingBtn = document.querySelector('a.btn-outline-warning');
+scalingBtn.setAttribute('data-bs-toggle','modal');
+scalingBtn.setAttribute('data-bs-target','#scalingOptimizerModal');
+
+// Auto-Scaling Optimizer logic
+const scalingForm = document.getElementById('scalingOptimizerForm');
+scalingForm.addEventListener('submit', async function(e){
+  e.preventDefault();
+  const config = {
+    min_instances: document.getElementById('minInstances').value,
+    max_instances: document.getElementById('maxInstances').value,
+    target_cpu_utilization: document.getElementById('targetCPU').value
+  };
+  const resultDiv = document.getElementById('scalingResult');
+  resultDiv.classList.add('d-none'); resultDiv.classList.remove('alert-success','alert-danger');
+  try {
+    const resp = await fetch('/api/scaling-optimizer/', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(config)
+    });
+    const data = await resp.json();
+    if(data.status==='success'){
+      let txt = JSON.stringify(data.optimized,null,2);
+      resultDiv.innerText = txt;
+      resultDiv.classList.remove('d-none');
+      resultDiv.classList.add('alert-success');
+    } else {
+      throw new Error(data.error||'Optimization failed');
+    }
+  } catch(err){
+    resultDiv.innerText = err.message;
+    resultDiv.classList.remove('d-none');
+    resultDiv.classList.add('alert-danger');
+  }
+});
+</script>
+
+<!-- Add Region Analyzer Modal -->
+<div class="modal fade" id="regionAnalyzerModal" tabindex="-1" aria-labelledby="regionAnalyzerLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="regionAnalyzerLabel">Region Analyzer</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="regionAnalyzerForm">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="regionInstanceType" class="form-label">EC2 Instance Type</label>
+            <input type="text" class="form-control" id="regionInstanceType" required>
+          </div>
+          <div class="mb-3">
+            <label for="regions" class="form-label">Regions (comma separated)</label>
+            <input type="text" class="form-control" id="regions" required placeholder="us-east-1,eu-west-1">
+          </div>
+          <div id="regionResult" class="alert d-none mt-2" style="white-space:pre;font-family:monospace"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-info">Analyze</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+const regionBtn = document.querySelector('a.btn-outline-info');
+regionBtn.setAttribute('data-bs-toggle','modal');
+regionBtn.setAttribute('data-bs-target','#regionAnalyzerModal');
+
+// Region Analyzer logic
+const regionForm = document.getElementById('regionAnalyzerForm');
+regionForm.addEventListener('submit', async function(e){
+  e.preventDefault();
+  const type = document.getElementById('regionInstanceType').value;
+  const regions = document.getElementById('regions').value.split(',').map(r=>r.trim());
+  const resultDiv = document.getElementById('regionResult');
+  resultDiv.classList.add('d-none'); resultDiv.classList.remove('alert-success','alert-danger');
+  try {
+    const resp = await fetch('/api/region-analyzer/', {
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({instance_type: type, regions: regions})
+    });
+    const data = await resp.json();
+    if(data.status==='success'){
+      let txt = JSON.stringify(data.comparison,null,2);
+      resultDiv.innerText = txt;
+      resultDiv.classList.remove('d-none');
+      resultDiv.classList.add('alert-success');
+    }else{
+      throw new Error(data.error||'Analysis failed');
+    }
+  }catch(err){
+    resultDiv.innerText = err.message;
     resultDiv.classList.remove('d-none');
     resultDiv.classList.add('alert-danger');
   }
