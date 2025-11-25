@@ -1,0 +1,31 @@
+<!-- Link to custom card CSS for extra styling -->
+<link rel="stylesheet" href="/static/cardcustom.css" />
+
+<!-- Rest of your HTML remains; add summaries, sidebar ready area, and result statistics: -->
+
+<div class="row mb-4">
+  <div class="col-lg-10 mx-auto">
+    <div class="alert alert-dark border-secondary d-flex align-items-center gap-3" role="alert">
+      <i class="bi bi-info-circle-fill fs-4"></i>
+      <div>
+        <strong>Tip:</strong> Use the calculators for quick deployment cost and optimization estimates tailored for AWS Elastic Beanstalk, EC2, S3, and scalable cloud apps.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add place for summary output below dashboard grid -->
+<div class="row mb-3">
+  <div class="col-lg-10 mx-auto d-flex flex-wrap justify-content-between align-items-center bg-dark rounded-3 p-3 gap-2 border border-primary">
+    <div class="fs-5"><i class="bi bi-bar-chart-steps"></i> <strong>Latest:</strong></div>
+    <div id="lastResult" class="badge bg-primary fs-6">Ready for your first calculation!</div>
+  </div>
+</div>
+
+<!-- Continue with dashboard cards and modals. Add JS to update #lastResult with summary after each calc! -->
+<script>
+// Place inside each "then" from modal JS after a successful fetch
+function updateLastResult(msg) {
+  document.getElementById('lastResult').textContent = msg;
+}
+</script>
