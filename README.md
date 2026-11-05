@@ -2,7 +2,9 @@
 
 **Cloud Architecture & Cost Optimization Tool**
 
-A modern Python/Django web application to help AWS solution architects and developers optimize cloud architecture deployments. Inspired by AWS internship experience (Nov 2024 - Feb 2025).
+A Python/Django web application to help AWS solution architects and developers optimize cloud architecture deployments.
+
+> **Status: early prototype.** The services are scaffolds; the AWS Pricing API lookup is not implemented yet (`CostCalculator.get_instance_price` returns `0.0`).
 
 ## Features
 
@@ -19,12 +21,8 @@ A modern Python/Django web application to help AWS solution architects and devel
 
 ## Getting Started
 
-1. `git clone <repo_url>`
+1. `git clone https://github.com/Abhinavsathyadas07/aws-cost-optimizer.git`
 2. Set up a Python virtual environment
 3. Install requirements: `pip install -r requirements.txt`
 4. Configure AWS credentials
 5. Run Django dev server: `python manage.py runserver`
-
-## LinkedIn Hook
-
-"Built a cloud architecture optimization tool for AWS deployments"
